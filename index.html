@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kid Reward Tracker</title>
     
-    <!-- Web App Icons -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Reward App">
     
-    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/240/dinosaur.png">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/240/gift.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -22,22 +21,42 @@
             -webkit-tap-highlight-color: transparent; 
             touch-action: manipulation;
         }
-        .stamp-card { background: white; border-radius: 2.5rem; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); }
+        .stamp-card { 
+            background: white; 
+            border-radius: 2.5rem; 
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); 
+            position: relative;
+        }
         .stamp-animation { animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes pop {
             0% { transform: scale(0) rotate(-20deg); opacity: 0; }
             100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
-        .modal-open { overflow: hidden; }
+        
+        .mascot-corner {
+            position: absolute;
+            top: -50px;
+            right: -10px;
+            z-index: 10;
+            filter: drop-shadow(0 8px 10px rgba(0,0,0,0.1));
+            animation: bounce 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-10px) scale(1.05); }
+        }
+
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: #E2E8F0; border-radius: 4px; }
         input[type=range]::-webkit-slider-thumb { height: 28px; width: 28px; border-radius: 50%; background: #4F46E5; -webkit-appearance: none; margin-top: -10px; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        .custom-sticker {
-            width: 80%;
-            height: 80%;
+        .custom-sticker-img {
+            width: 85%;
+            height: 85%;
             object-fit: contain;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+            border-radius: 50%;
         }
     </style>
 </head>
@@ -48,109 +67,155 @@
         <!-- Header -->
         <div class="flex items-center justify-between mb-10">
             <div>
-                <h1 class="text-4xl font-800 text-slate-900 tracking-tight">Hi Curtis!</h1>
-                <p class="text-slate-500 font-600 mt-1">Doing good today? 🚀</p>
+                <h1 class="text-4xl font-[800] text-slate-900 tracking-tight">Hi Curtis!</h1>
+                <p class="text-slate-500 font-[600] mt-1">Earn your next prize! 🎁</p>
             </div>
-            <div class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center border-2 border-indigo-100">
-                <span class="text-3xl">🦕</span>
+            <div class="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center border-2 border-amber-100">
+                <span class="text-3xl">⭐</span>
             </div>
         </div>
 
         <!-- Bank Container -->
         <div class="grid grid-cols-2 gap-4 mb-8">
-            <!-- Small Prize Bank -->
-            <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2rem] p-5 text-white shadow-xl relative overflow-hidden">
-                <p class="text-[9px] font-800 uppercase tracking-widest opacity-80">Prizes</p>
+            <div class="bg-gradient-to-br from-pink-500 to-rose-600 rounded-[2rem] p-5 text-white shadow-xl relative overflow-hidden">
+                <p class="text-[9px] font-[800] uppercase tracking-widest opacity-80">Prizes</p>
                 <div class="flex items-baseline gap-1 mt-1">
-                    <span id="prize-bank" class="text-3xl font-800">0</span>
-                    <span class="text-[10px] font-bold opacity-80">CLAIMED</span>
+                    <span id="prize-bank" class="text-3xl font-[800]">0</span>
+                    <span class="text-[10px] font-bold opacity-80 uppercase">Earned</span>
                 </div>
                 <div class="absolute -right-2 -bottom-2 text-3xl opacity-20">🎁</div>
             </div>
 
-            <!-- Mega Star Bank -->
-            <div class="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2rem] p-5 text-white shadow-xl relative overflow-hidden">
-                <p class="text-[9px] font-800 uppercase tracking-widest opacity-80">Mega Stars</p>
+            <div class="bg-gradient-to-br from-amber-400 to-orange-500 rounded-[2rem] p-5 text-white shadow-xl relative overflow-hidden">
+                <p class="text-[9px] font-[800] uppercase tracking-widest opacity-80">Mega Stars</p>
                 <div class="flex items-baseline gap-1 mt-1">
-                    <span id="star-bank" class="text-3xl font-800">0</span>
-                    <span class="text-[10px] font-bold opacity-80">SAVED</span>
+                    <span id="star-bank" class="text-3xl font-[800]">0</span>
+                    <span class="text-[10px] font-bold opacity-80 uppercase">Saved</span>
                 </div>
-                <div class="absolute -right-2 -bottom-2 text-3xl opacity-20">💰</div>
+                <div class="absolute -right-2 -bottom-2 text-3xl opacity-20">🌟</div>
             </div>
         </div>
 
-        <!-- Stamp Grid -->
+        <!-- Stamp Grid Card -->
         <div class="stamp-card p-8 mb-8 border border-slate-50">
+            <div class="mascot-corner">
+                <img src="https://img.icons8.com/fluency/144/gift.png" class="w-24 h-24" alt="Prize Box">
+            </div>
+
             <div class="flex justify-between items-center mb-8">
-                <h3 class="font-800 text-slate-800 text-lg">Sticker Chart</h3>
-                <span id="progress-val" class="text-indigo-600 font-800 text-sm bg-indigo-50 px-4 py-1.5 rounded-full">0 / 5</span>
+                <h3 class="font-[800] text-slate-800 text-lg">Goal Progress</h3>
+                <span id="progress-val" class="text-rose-600 font-[800] text-sm bg-rose-50 px-4 py-1.5 rounded-full z-20">0 / 5</span>
             </div>
             <div id="stamp-grid" class="grid grid-cols-4 gap-4"></div>
         </div>
 
         <!-- Action Buttons -->
         <div class="space-y-4">
-            <button onclick="addStamp()" class="w-full bg-white border-4 border-indigo-600 text-indigo-600 font-800 py-6 rounded-[2.5rem] text-2xl shadow-lg active:scale-95 transition-all transform">
-                Add Sticker 👍
+            <button onclick="addStamp()" class="w-full bg-white border-4 border-rose-500 text-rose-500 font-[800] py-6 rounded-[2.5rem] text-2xl shadow-lg active:scale-95 transition-all transform">
+                Add Sticker 👍🏻
             </button>
-            
-            <button onclick="removeStamp()" class="w-full bg-slate-50 border-2 border-dashed border-red-200 text-red-400 font-800 py-3 rounded-[1.5rem] text-sm active:bg-red-50 transition-all transform">
-                Remove Sticker 👎
+            <button onclick="removeStamp()" class="w-full bg-slate-50 border-2 border-dashed border-slate-200 text-slate-400 font-[800] py-3 rounded-[1.5rem] text-sm active:bg-slate-100 transition-all transform">
+                Remove Sticker 👎🏻
             </button>
         </div>
 
         <!-- Parent Panel -->
-        <button onclick="toggleSettings()" class="mt-16 w-full text-slate-300 text-[10px] font-800 uppercase tracking-[0.3em] py-4">Parent Controls</button>
+        <button onclick="toggleSettings()" class="mt-16 w-full text-slate-300 text-[10px] font-[800] uppercase tracking-[0.3em] py-4">Parent Controls</button>
         <div id="settings-panel" class="hidden mt-4 p-8 bg-slate-100 rounded-[2.5rem] space-y-6">
             <div>
-                <label class="block text-slate-700 font-800 text-sm mb-4 text-center">Goal: <span id="goal-display">5</span> Stickers</label>
+                <label class="block text-slate-700 font-[800] text-sm mb-4 text-center">Goal: <span id="goal-display">5</span> Stickers</label>
                 <input type="range" id="goal-slider" min="3" max="15" value="5" oninput="updateGoal(this.value)">
             </div>
-            <div class="flex items-center justify-between bg-white p-4 rounded-2xl">
-                <span class="text-sm font-800 text-slate-600">Use Photo Sticker</span>
-                <input type="checkbox" id="photo-toggle" onchange="togglePhotoMode(this.checked)" class="w-6 h-6">
+            
+            <div class="bg-white p-4 rounded-2xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-[800] text-slate-600">Use Custom Photo</span>
+                    <input type="checkbox" id="photo-toggle" onchange="togglePhotoMode(this.checked)" class="w-6 h-6 rounded-lg">
+                </div>
+                
+                <div id="photo-upload-area" class="hidden border-2 border-dashed border-slate-200 rounded-xl p-4 text-center">
+                    <input type="file" id="sticker-input" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
+                    <button onclick="document.getElementById('sticker-input').click()" class="text-xs font-bold text-rose-600 uppercase">
+                        Change Sticker Image
+                    </button>
+                    <div id="preview-container" class="mt-2 flex justify-center">
+                        <img id="sticker-preview" class="w-12 h-12 object-contain rounded-full border border-slate-100 hidden">
+                    </div>
+                </div>
             </div>
-            <button onclick="resetAll()" class="w-full text-red-400 font-800 text-[10px] uppercase pt-4">Reset All Data</button>
+
+            <button onclick="resetAll()" class="w-full text-red-400 font-[800] text-[10px] uppercase pt-4">Reset All Data</button>
         </div>
     </main>
 
     <!-- SUCCESS MODAL -->
     <div id="modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-lg z-50 hidden flex items-center justify-center p-6">
         <div class="bg-white rounded-[3.5rem] w-full max-w-sm p-10 text-center shadow-2xl">
-            <div class="text-8xl mb-6">🏆</div>
-            <h2 class="text-3xl font-800 text-slate-900 mb-2">Goal Reached!</h2>
-            <p class="text-slate-500 mb-10 font-medium">Time for a reward!</p>
+            <div class="text-8xl mb-6">🎁</div>
+            <h2 class="text-3xl font-[800] text-slate-900 mb-2">You Did It!</h2>
+            <p class="text-slate-500 mb-10 font-medium">Which one do you want?</p>
             <div class="space-y-4">
-                <button onclick="redeem('prize')" class="w-full bg-emerald-600 text-white font-800 py-5 rounded-[2rem] text-lg shadow-lg">Claim Small Prize 🎁</button>
-                <button onclick="redeem('star')" class="w-full bg-indigo-600 text-white font-800 py-5 rounded-[2rem] text-lg shadow-lg">Save for Mega Star 💰</button>
+                <button onclick="redeem('prize')" class="w-full bg-rose-500 text-white font-[800] py-5 rounded-[2rem] text-lg shadow-lg">Get My Prize! 🎁</button>
+                <button onclick="redeem('star')" class="w-full bg-amber-500 text-white font-[800] py-5 rounded-[2rem] text-lg shadow-lg">Save for Mega Star ⭐</button>
             </div>
         </div>
     </div>
 
     <script>
-        const EMOJI_STICKER = '🦕';
-        const PHOTO_FILENAME = 'sticker.png';
+        const STORAGE_KEY = 'kid_reward_v7_prize';
+        const DEFAULT_EMOJI = '⭐';
 
         let state = {
             stamps: 0,
             bank: 0,
             prizes: 0,
             goal: 5,
-            usePhoto: false
+            usePhoto: false,
+            customStickerData: null
         };
 
         function loadData() {
-            const saved = localStorage.getItem('kid_reward_data_v4');
+            const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) state = JSON.parse(saved);
-            // Ensure compatibility for new prizes field
-            if (state.prizes === undefined) state.prizes = 0;
             
             document.getElementById('photo-toggle').checked = state.usePhoto;
+            if (state.usePhoto) document.getElementById('photo-upload-area').classList.remove('hidden');
+            
+            if (state.customStickerData) {
+                const preview = document.getElementById('sticker-preview');
+                preview.src = state.customStickerData;
+                preview.classList.remove('hidden');
+            }
+            
             updateUI();
         }
 
         function saveData() {
-            localStorage.setItem('kid_reward_data_v4', JSON.stringify(state));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                state.customStickerData = e.target.result;
+                const preview = document.getElementById('sticker-preview');
+                preview.src = state.customStickerData;
+                preview.classList.remove('hidden');
+                saveData();
+                updateUI();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function togglePhotoMode(val) {
+            state.usePhoto = val;
+            const area = document.getElementById('photo-upload-area');
+            val ? area.classList.remove('hidden') : area.classList.add('hidden');
+            saveData();
+            updateUI();
         }
 
         function updateUI() {
@@ -166,13 +231,13 @@
             for (let i = 0; i < state.goal; i++) {
                 const cell = document.createElement('div');
                 const isStamped = i < state.stamps;
-                cell.className = `aspect-square rounded-[1.2rem] flex items-center justify-center text-3xl transition-all duration-300 ${isStamped ? 'bg-indigo-50 border-2 border-indigo-100 shadow-inner' : 'bg-slate-50 border-2 border-dashed border-slate-200 text-slate-200 text-xs font-800'}`;
+                cell.className = `aspect-square rounded-[1.2rem] flex items-center justify-center transition-all duration-300 ${isStamped ? 'bg-rose-50 border-2 border-rose-100 shadow-inner' : 'bg-slate-50 border-2 border-dashed border-slate-200 text-slate-300 text-xs font-[800]'}`;
 
                 if (isStamped) {
-                    if (state.usePhoto) {
-                        cell.innerHTML = `<img src="${PHOTO_FILENAME}" class="custom-sticker stamp-animation" onerror="this.src='https://img.icons8.com/color/96/image-not-found.png'">`;
+                    if (state.usePhoto && state.customStickerData) {
+                        cell.innerHTML = `<img src="${state.customStickerData}" class="custom-sticker-img stamp-animation">`;
                     } else {
-                        cell.innerHTML = `<span class="stamp-animation">${EMOJI_STICKER}</span>`;
+                        cell.innerHTML = `<span class="text-3xl stamp-animation">${DEFAULT_EMOJI}</span>`;
                     }
                 } else {
                     cell.innerText = i + 1;
@@ -183,7 +248,6 @@
             if (state.stamps >= state.goal) {
                 setTimeout(() => {
                     document.getElementById('modal').classList.remove('hidden');
-                    document.body.classList.add('modal-open');
                 }, 400);
             }
         }
@@ -205,14 +269,9 @@
         }
 
         function redeem(type) {
-            if (type === 'star') {
-                state.bank++;
-            } else if (type === 'prize') {
-                state.prizes++;
-            }
+            type === 'star' ? state.bank++ : state.prizes++;
             state.stamps = 0;
             document.getElementById('modal').classList.add('hidden');
-            document.body.classList.remove('modal-open');
             saveData();
             updateUI();
         }
@@ -224,20 +283,13 @@
             updateUI();
         }
 
-        function togglePhotoMode(val) {
-            state.usePhoto = val;
-            saveData();
-            updateUI();
-        }
-
         function toggleSettings() {
             document.getElementById('settings-panel').classList.toggle('hidden');
         }
 
         function resetAll() {
             if (confirm("Reset everything?")) {
-                state = { stamps: 0, bank: 0, prizes: 0, goal: 5, usePhoto: false };
-                saveData();
+                localStorage.removeItem(STORAGE_KEY);
                 location.reload();
             }
         }
