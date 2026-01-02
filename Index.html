@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kid Reward Tracker</title>
+    
+    <!-- Web App Icons & Manifest for Standalone Behavior -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Reward Kid">
+    
+    <!-- High-quality icon for Home Screen (using the character style from your photo) -->
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/240/dinosaur.png">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/240/dinosaur.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap');
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #F8FAFC;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .stamp-card {
+            background: white;
+            border-radius: 2.5rem;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+        }
+
+        .stamp-animation {
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        /* Prevent scrolling when modal is open */
+        .modal-open { overflow: hidden; }
+
+        /* Modern Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #E2E8F0;
+            border-radius: 4px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 28px;
+            width: 28px;
+            border-radius: 50%;
+            background: #4F46E5;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -10px;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+            border: 3px solid white;
+        }
+
+        /* SVG Character Styling to match your photo's vibe */
+        .character-icon {
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- APP CONTENT -->
+    <main class="flex-1 px-6 pt-12 pb-24 max-w-md mx-auto w-full">
+        
+        <!-- Header with stylized character from your photo -->
+        <div class="flex items-center justify-between mb-10">
+            <div>
+                <h1 class="text-4xl font-800 text-slate-900 tracking-tight">Hi Champ!</h1>
+                <p class="text-slate-500 font-600 mt-1">Doing good today? 🚀</p>
+            </div>
+            <!-- Character placeholder based on your photo's style -->
+            <div class="w-20 h-20 bg-indigo-50 rounded-[2rem] flex items-center justify-center border-2 border-indigo-100 character-icon">
+                <svg viewBox="0 0 100 100" class="w-14 h-14">
+                    <circle cx="50" cy="45" r="35" fill="#4F46E5" />
+                    <circle cx="35" cy="40" r="5" fill="white" />
+                    <circle cx="65" cy="40" r="5" fill="white" />
+                    <path d="M35 60 Q50 75 65 60" stroke="white" stroke-width="5" fill="none" stroke-linecap="round" />
+                    <!-- Stylized hair/cap element reflecting your photo -->
+                    <path d="M20 30 Q50 5 80 30" stroke="#4F46E5" stroke-width="8" fill="none" stroke-linecap="round" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Saved Reward Bank -->
+        <div class="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2.5rem] p-7 mb-8 text-white flex items-center justify-between shadow-2xl shadow-indigo-100 overflow-hidden relative">
+            <div class="relative z-10">
+                <p class="text-[10px] font-800 uppercase tracking-[0.2em] opacity-70">Well Done Bank</p>
+                <div class="flex items-baseline gap-2 mt-1">
+                    <span id="star-bank" class="text-5xl font-800">0</span>
+                    <span class="text-sm font-bold opacity-80 uppercase">Stars</span>
+                </div>
+            </div>
+            <div class="bg-white/20 p-4 rounded-[1.5rem] backdrop-blur-md relative z-10">
+                <span class="text-4xl">⭐</span>
+            </div>
+            <!-- Decorative circle -->
+            <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full"></div>
+        </div>
+
+        <!-- Stamp Grid -->
+        <div class="stamp-card p-8 mb-8 border border-slate-50">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="font-800 text-slate-800 text-lg tracking-tight">Sticker Chart</h3>
+                <span id="progress-val" class="text-indigo-600 font-800 text-sm bg-indigo-50 px-4 py-1.5 rounded-full">0 / 5</span>
+            </div>
+            
+            <div id="stamp-grid" class="grid grid-cols-4 gap-4">
+                <!-- Stamps go here -->
+            </div>
+        </div>
+
+        <!-- Action Button -->
+        <button onclick="addStamp()" class="w-full bg-white border-4 border-indigo-600 text-indigo-600 font-800 py-6 rounded-[2.5rem] text-2xl shadow-lg active:bg-indigo-50 active:scale-95 transition-all transform hover:shadow-xl">
+            Add Sticker 👍
+        </button>
+
+        <!-- Parent Menu Toggle -->
+        <button onclick="toggleSettings()" class="mt-16 w-full text-slate-300 text-[10px] font-800 uppercase tracking-[0.3em] py-4">
+            Parent Controls
+        </button>
+
+        <!-- Parent Panel -->
+        <div id="settings-panel" class="hidden mt-4 p-8 bg-slate-100 rounded-[2.5rem] space-y-6 animate-in slide-in-from-bottom-4 duration-300">
+            <div>
+                <label class="block text-slate-700 font-800 text-sm mb-4 uppercase tracking-wider text-center">Delay Reward Training</label>
+                <input type="range" id="goal-slider" min="3" max="15" value="5" class="mb-2" oninput="updateGoal(this.value)">
+                <p id="goal-display" class="text-center font-800 text-indigo-600 text-xl mt-2">5 Stamps</p>
+                <p class="text-[10px] text-slate-400 text-center mt-2 font-semibold">Increase this as he gets better at waiting!</p>
+            </div>
+            
+            <div class="pt-4 border-t border-slate-200">
+                <button onclick="resetAll()" class="w-full text-red-400 font-800 text-[10px] uppercase tracking-widest py-2">
+                    Reset App Data
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- SUCCESS MODAL -->
+    <div id="modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-lg z-50 hidden flex items-center justify-center p-6">
+        <div class="bg-white rounded-[3.5rem] w-full max-w-sm p-10 text-center shadow-2xl scale-in-center">
+            <div class="text-8xl mb-6">🎯</div>
+            <h2 class="text-3xl font-800 text-slate-900 mb-2 tracking-tight">Goal Reached!</h2>
+            <p class="text-slate-500 mb-10 font-medium">Which reward do you want?</p>
+            <div class="space-y-4">
+                <button onclick="redeem('prize')" class="w-full bg-indigo-600 text-white font-800 py-5 rounded-[2rem] shadow-xl text-lg">Claim Small Prize 🎁</button>
+                <button onclick="redeem('star')" class="w-full bg-slate-100 text-indigo-600 font-800 py-5 rounded-[2rem] text-lg">Save for Mega Star ⭐</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Use browser storage to keep data across app closures
+        let state = {
+            stamps: 0,
+            bank: 0,
+            goal: 5
+        };
+
+        function loadData() {
+            const saved = localStorage.getItem('kid_reward_data_standalone');
+            if (saved) state = JSON.parse(saved);
+            updateUI();
+        }
+
+        function saveData() {
+            localStorage.setItem('kid_reward_data_standalone', JSON.stringify(state));
+        }
+
+        function updateUI() {
+            document.getElementById('star-bank').innerText = state.bank;
+            document.getElementById('progress-val').innerText = `${state.stamps} / ${state.goal}`;
+            document.getElementById('goal-display').innerText = `${state.goal} Stamps`;
+            document.getElementById('goal-slider').value = state.goal;
+
+            const grid = document.getElementById('stamp-grid');
+            grid.innerHTML = '';
+            
+            // Adjust layout for high goal numbers
+            if (state.goal > 8) grid.classList.replace('grid-cols-4', 'grid-cols-5');
+            else grid.classList.replace('grid-cols-5', 'grid-cols-4');
+
+            for (let i = 0; i < state.goal; i++) {
+                const cell = document.createElement('div');
+                const isStamped = i < state.stamps;
+                
+                cell.className = `aspect-square rounded-[1.2rem] flex items-center justify-center text-3xl transition-all duration-300 ${
+                    isStamped 
+                    ? 'bg-indigo-50 border-2 border-indigo-100 shadow-inner' 
+                    : 'bg-slate-50 border-2 border-dashed border-slate-200 text-slate-200 text-xs font-800'
+                }`;
+
+                if (isStamped) {
+                    // Dinosaur sticker - feels like a physical sticker
+                    cell.innerHTML = '<span class="stamp-animation">🦕</span>';
+                } else {
+                    cell.innerText = i + 1;
+                }
+                grid.appendChild(cell);
+            }
+
+            if (state.stamps >= state.goal) {
+                setTimeout(() => {
+                    document.getElementById('modal').classList.remove('hidden');
+                    document.body.classList.add('modal-open');
+                }, 400);
+            }
+        }
+
+        function addStamp() {
+            if (state.stamps < state.goal) {
+                state.stamps++;
+                saveData();
+                updateUI();
+            }
+        }
+
+        function redeem(type) {
+            if (type === 'star') state.bank++;
+            state.stamps = 0;
+            document.getElementById('modal').classList.add('hidden');
+            document.body.classList.remove('modal-open');
+            saveData();
+            updateUI();
+        }
+
+        function updateGoal(val) {
+            state.goal = parseInt(val);
+            if (state.stamps > state.goal) state.stamps = state.goal;
+            saveData();
+            updateUI();
+        }
+
+        function toggleSettings() {
+            const panel = document.getElementById('settings-panel');
+            panel.classList.toggle('hidden');
+            if (!panel.classList.contains('hidden')) {
+                panel.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function resetAll() {
+            if (confirm("Reset everything? This cannot be undone.")) {
+                state = { stamps: 0, bank: 0, goal: 5 };
+                saveData();
+                updateUI();
+                toggleSettings();
+            }
+        }
+
+        // Run app
+        loadData();
+    </script>
+</body>
+</html>
